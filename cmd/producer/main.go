@@ -11,13 +11,18 @@ func main() {
 	deliveryChan := make(chan kafka.Event)
 
 	p := NewKafkaProducer()
-	Publish("mensagem test", "tp.name", p, nil, deliveryChan)
+	Publish("mensagem happy", "tp.name", p, []byte("transfer"), deliveryChan)
 	go DeliveryReport(deliveryChan)
+	p.Flush(2000)
+
 }
 
 func NewKafkaProducer() *kafka.Producer {
 	configMap := &kafka.ConfigMap{
-		"bootstrap.servers": "kafka:9092",
+		"bootstrap.servers":   "kafka:9092",
+		"delivery.timeout.ms": "0",
+		"acks":                "all",
+		"enable.idempotence":  "true",
 	}
 
 	producer, err := kafka.NewProducer(configMap)
